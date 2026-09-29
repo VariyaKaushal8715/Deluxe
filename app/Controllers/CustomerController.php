@@ -144,9 +144,83 @@ class CustomerController extends Controller
         );
 
         $this->render('customer/appointments', [
-            'title' => 'My Appointments — Deluxe Salon',
+            'title' => 'My Appointments — Your Salon',
             'appointments' => $appointments
         ], 'customer');
+    }
+
+    public function cancelAppointment(): void
+    {
+        $userId = Auth::id();
+        $appointmentId = (int)($_POST['appointment_id'] ?? 0);
+        $reason = trim($_POST['reason'] ?? 'Cancelled by client via web portal');
+
+        if ($appointmentId <= 0) {
+            Session::flash('error', 'Invalid appointment selected for cancellation.');
+            $this->redirect('/customer/appointments');
+            return;
+        }
+
+        $success = \App\Models\Appointment::cancelAppointment($appointmentId, $userId, $reason);
+
+        if ($success) {
+            Session::flash('success', 'Your appointment has been cancelled successfully.');
+        } else {
+            Session::flash('error', 'Unable to cancel appointment. Only pending or confirmed bookings can be cancelled.');
+        }
+
+        $this->redirect('/customer/appointments');
+    }
+
+    public function rescheduleAppointment(): void
+    {
+        $userId = Auth::id();
+        $appointmentId = (int)($_POST['appointment_id'] ?? 0);
+        $newDate = trim($_POST['new_date'] ?? '');
+        $newTime = trim($_POST['new_time'] ?? '');
+
+        $appt = \App\Models\Appointment::findById($appointmentId);
+
+        if (!$appt || (int)$appt['customer_id'] !== $userId) {
+            Session::flash('error', 'Appointment not found or unauthorized.');
+            $this->redirect('/customer/appointments');
+            return;
+        }
+
+        if (empty($newDate) || empty($newTime)) {
+            Session::flash('error', 'Please select a valid new date and time slot for rescheduling.');
+            $this->redirect('/customer/appointments');
+            return;
+        }
+
+        $duration = (int)$appt['total_duration_minutes'];
+        $staffId = (int)$appt['staff_id'];
+
+        // Verify availability for new slot
+        $availableSlots = \App\Services\AvailabilityService::getAvailableSlots($staffId, $newDate, $duration);
+        $isSlotValid = false;
+        foreach ($availableSlots as $slot) {
+            if ($slot['start_time'] === $newTime) {
+                $isSlotValid = true;
+                break;
+            }
+        }
+
+        if (!$isSlotValid) {
+            Session::flash('error', 'The selected new time slot is no longer available. Please choose another slot.');
+            $this->redirect('/customer/appointments');
+            return;
+        }
+
+        $rescheduled = \App\Models\Appointment::reschedule($appointmentId, $userId, $newDate, $newTime, $duration);
+
+        if ($rescheduled) {
+            Session::flash('success', 'Your appointment has been rescheduled to ' . date('M d, Y', strtotime($newDate)) . ' at ' . date('g:i A', strtotime($newTime)));
+        } else {
+            Session::flash('error', 'Failed to reschedule appointment.');
+        }
+
+        $this->redirect('/customer/appointments');
     }
 
     public function invoices(): void
@@ -162,7 +236,7 @@ class CustomerController extends Controller
         );
 
         $this->render('customer/invoices', [
-            'title' => 'My Invoices & Receipts — Deluxe Salon',
+            'title' => 'My Invoices & Receipts — Your Salon',
             'invoices' => $invoices
         ], 'customer');
     }

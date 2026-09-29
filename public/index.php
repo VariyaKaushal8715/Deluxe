@@ -38,6 +38,7 @@ use App\Controllers\CustomerController;
 use App\Controllers\BookingController;
 use App\Controllers\GalleryController;
 use App\Controllers\ReviewController;
+use App\Controllers\AdminController;
 
 // Start secure session
 Session::start();
@@ -51,7 +52,12 @@ $router->get('/services', [ServiceController::class, 'index']);
 $router->get('/services/{slug}', [ServiceController::class, 'show']);
 $router->get('/gallery', [GalleryController::class, 'index']);
 $router->get('/reviews', [ReviewController::class, 'index']);
+
+// Booking Engine Routes
 $router->get('/book', [BookingController::class, 'index']);
+$router->get('/api/booking/staff', [BookingController::class, 'getStaffForServices']);
+$router->get('/api/booking/slots', [BookingController::class, 'getAvailableSlots']);
+$router->post('/book/submit', [BookingController::class, 'submitBooking']);
 
 // Authentication Routes
 $router->get('/login', [AuthController::class, 'login']);
@@ -67,7 +73,14 @@ $router->get('/customer/profile', [CustomerController::class, 'profile']);
 $router->post('/customer/profile', [CustomerController::class, 'updateProfile']);
 $router->post('/customer/password', [CustomerController::class, 'updatePassword']);
 $router->get('/customer/appointments', [CustomerController::class, 'appointments']);
+$router->post('/customer/appointments/cancel', [CustomerController::class, 'cancelAppointment']);
+$router->post('/customer/appointments/reschedule', [CustomerController::class, 'rescheduleAppointment']);
 $router->get('/customer/invoices', [CustomerController::class, 'invoices']);
+
+// Admin Calendar & Scheduling Routes
+$router->get('/admin/calendar', [AdminController::class, 'calendar']);
+$router->post('/admin/walkin', [AdminController::class, 'walkInBooking']);
+$router->post('/admin/time-block', [AdminController::class, 'createTimeBlock']);
 
 // Dispatch Request
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
