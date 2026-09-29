@@ -64,9 +64,17 @@
                             <td>
                                 <div class="fw-bold small"><?= currency($appt['total_amount']) ?></div>
                                 <div class="text-muted" style="font-size: 0.7rem;">Adv: <?= currency($appt['advance_paid']) ?></div>
+                                <?php if ($appt['balance_due'] > 0 && $appt['status'] !== 'cancelled'): ?>
+                                    <a href="/payment/checkout?appointment_id=<?= (int)$appt['id'] ?>" class="badge bg-warning text-dark text-decoration-none mt-1 d-inline-block">
+                                        <i class="bi bi-credit-card me-1"></i> Pay Now
+                                    </a>
+                                <?php endif; ?>
                             </td>
                             <td><span class="badge <?= $badgeClass ?> text-capitalize"><?= e($appt['status']) ?></span></td>
                             <td class="text-end">
+                                <a href="/customer/invoices/<?= (int)$appt['id'] ?>" class="btn btn-sm btn-outline-secondary me-1" title="View Digital Invoice & Receipt">
+                                    <i class="bi bi-receipt"></i> Invoice
+                                </a>
                                 <?php if ($canManage): ?>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

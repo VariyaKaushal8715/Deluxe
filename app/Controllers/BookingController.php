@@ -174,8 +174,8 @@ class BookingController extends Controller
         $result = AvailabilityService::createAppointmentAtomic($bookingData);
 
         if ($result['success']) {
-            Session::flash('success', 'Appointment Reserved! Booking Reference: ' . $result['booking_reference']);
-            $this->redirect('/customer/appointments');
+            Session::flash('success', 'Appointment Reserved! Reference: ' . $result['booking_reference'] . '. Please complete payment option below.');
+            $this->redirect('/payment/checkout?appointment_id=' . $result['appointment_id']);
         } else {
             Session::flash('error', $result['message']);
             $this->redirect('/book');

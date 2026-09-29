@@ -24,6 +24,7 @@
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Status</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,6 +35,11 @@
                             <td><span class="small"><?= date('M d, Y', strtotime($inv['issued_date'])) ?></span></td>
                             <td><span class="fw-bold small"><?= currency($inv['total_amount']) ?></span></td>
                             <td><span class="badge bg-success text-capitalize"><?= e($inv['payment_status']) ?></span></td>
+                            <td class="text-end">
+                                <a href="/customer/invoices/<?= (int)$inv['appointment_id'] ?>" class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-eye"></i> View Invoice
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
